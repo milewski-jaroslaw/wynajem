@@ -2,44 +2,58 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class User extends Authenticatable
+/**
+ * @property int user_id
+ * @property string user_firstname
+ * @property string user_lastname
+ */
+class User extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
 
+    public $timestamps = false;
+    protected $primaryKey = 'user_id';
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'user_firstname',
+        'user_lastname',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Properties/estates supervised by the user
      *
-     * @var array<int, string>
+     * @return HasMany
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function estates(): HasMany
+    {
+        return $this->hasMany(Estate::class, 'supervisor_user_id');
+    }
 
     /**
-     * The attributes that should be cast.
+     * Information about when the user is taking a break
      *
-     * @var array<string, string>
+     * @return HasMany
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(UserShift::class, 'user_id');
+    }
+
+    /**
+     * Information about whom the user will replace another user during a break
+     *
+     * @return HasMany
+     */
+    public function shiftSubstitution(): HasMany
+    {
+        return $this->hasMany(UserShift::class, 'substitute_user_id');
+    }
 }
